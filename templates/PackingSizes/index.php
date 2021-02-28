@@ -10,6 +10,7 @@
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>
             <?= $this->Form->end() ?>
+            <div class="loader"></div>
         </div>
     </div>
 </div>

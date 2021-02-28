@@ -1,6 +1,7 @@
 $(function() {
     $('#calculator').submit(function(e) {
         e.preventDefault();
+        $('.loader').show();
         $('.packing-results').remove();
         var protocol = window.location.protocol;
         var hostname = window.location.hostname;
@@ -12,6 +13,7 @@ $(function() {
             headers: {'X-CSRF-Token': getCsrfToken()},
             data: {qty: qty},
             success: function(data) {
+                $('.loader').hide();
                 $('.form').append(data);
             }
         });
