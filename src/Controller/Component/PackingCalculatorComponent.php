@@ -42,25 +42,37 @@ class PackingCalculatorComponent extends Component
      * @param int $qty Order quantity
      * @return array Packs to send
      */
-    public function getSizesBelow(Query $sizesBelow, int $qty): array
-    {
-        $results = [];
+     public function getSizesBelow(Query $sizesBelow, int $qty): array
+     {
+         $results = array_fill_keys($sizesBelow->extract('pack_size')->toList(), 0);
+         $orderQty = $qty;
 
-        foreach ($sizesBelow as $size) {
-            $packs = $this->getPacks($size->pack_size, $qty);
+         foreach ($sizesBelow as $size) {
+             $packs = $this->getPacks($size->pack_size, $qty);
 
-            if ($packs > 0) {
-                $results[$size->pack_size] = $packs;
-                $qty -= $packs * $size->pack_size;
-            }
-        }
+             if ($packs > 0) {
+                 $results[$size->pack_size] = $packs;
+                 $qty -= $packs * $size->pack_size;
+             }
+         }
 
-        if ($qty > 0) {
-            $results = $this->addMinSize($results, $size->pack_size);
-        }
+         if ($qty > 0) {
+             $results = $this->addMinSize($results, $size->pack_size);
+             $remainder = $size->pack_size - $qty;
 
-        return $results;
-    }
+             for ($i = 1; $i <= count($results); $i++) {
+                 $resultsSection = array_slice($results, 0, $i, true);
+                 $resultsSection[min(array_keys($resultsSection))]++;
+                 $totalShirts = $this->getTotalShirts($resultsSection);
+
+                 if (($totalShirts - $orderQty) == $remainder) {
+                     return $resultsSection;
+                 }
+             }
+         }
+
+         return array_filter($results);
+     }
 
     /**
      * Get the total number of shirts to be sent for sizes below the orderd quantity
